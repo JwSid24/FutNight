@@ -1,0 +1,55 @@
+# ------------------------------------------------------------
+# FutNight .gitignore
+# ------------------------------------------------------------
+
+# ---------- Secrets / miljø ----------
+.env
+.env.local
+.env.*.local
+*.secrets.json
+appsettings.*.local.json
+
+# ---------- .NET ----------
+bin/
+obj/
+out/
+[Dd]ebug/
+[Rr]elease/
+*.user
+*.suo
+*.userprefs
+project.lock.json
+artifacts/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.DotSettings.user
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+# EF Core – behold migrations i git; ignorér kun midlertidige udtræk
+*.mdf
+*.ldf
+
+# ---------- Node / Expo / React Native ----------
+node_modules/
+.expo/
+.expo-shared/
+dist/
+web-build/
+*.tgz
+.metro-health-check*
+npm-debug.*
+yarn-error.*
+
+# ---------- Logs ----------
+*.log
+logs/
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini

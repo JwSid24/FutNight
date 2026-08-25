@@ -1,0 +1,27 @@
+# Normalisér alle tekstfiler til LF i repoet (undgår CRLF-problemer i Docker/Linux)
+* text=auto eol=lf
+
+# Windows-specifikke filer beholder CRLF
+*.sln       text eol=crlf
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=crlf
+
+# Filer der køres i Linux/containere SKAL være LF
+*.sh        text eol=lf
+Dockerfile  text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Binære filer (ingen linjeskift-konvertering)
+*.png       binary
+*.jpg       binary
+*.jpeg      binary
+*.gif       binary
+*.ico       binary
+*.pdf       binary
+*.zip       binary
+*.ttf       binary
+*.otf       binary
+*.woff      binary
+*.woff2     binary
