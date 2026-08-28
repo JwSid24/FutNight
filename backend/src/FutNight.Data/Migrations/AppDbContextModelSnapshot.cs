@@ -33,6 +33,56 @@ namespace FutNight.Data.Migrations
                     b.ToTable("Events");
                 });
 
+            modelBuilder.Entity("FutNight.Data.Entities.Fixture", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AwayTeam")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CompetitionCode")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("CompetitionName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ExternalId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("HomeTeam")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("LastSyncedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int?>("Matchday")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("UtcKickoff")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompetitionCode");
+
+                    b.HasIndex("ExternalId")
+                        .IsUnique();
+
+                    b.HasIndex("UtcKickoff");
+
+                    b.ToTable("Fixtures");
+                });
+
             modelBuilder.Entity("FutNight.Data.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
