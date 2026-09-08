@@ -1,4 +1,5 @@
 using FutNight.Data.Entities;
+using FutNight.Data.Events;
 using FutNight.Data.Fixtures;
 using FutNight.Data.Football;
 using Microsoft.AspNetCore.Identity;
@@ -31,6 +32,7 @@ public static class DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>();
 
         services.AddScoped<IFixtureRepository, FixtureRepository>();
+        services.AddScoped<IEventRepository, EventRepository>();
 
         // Typed HttpClient til fodbold-data-kilden. Base-URL fra options (FootballDataOptions).
         services.AddHttpClient<IFootballDataClient, FootballDataClient>((sp, http) =>

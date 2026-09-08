@@ -25,5 +25,12 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             e.HasIndex(f => f.CompetitionCode);
             e.HasIndex(f => f.UtcKickoff);
         });
+
+        modelBuilder.Entity<Event>(e =>
+        {
+            e.HasIndex(x => x.InviteToken).IsUnique();
+            e.HasOne(x => x.Fixture).WithMany().HasForeignKey(x => x.FixtureId).OnDelete(DeleteBehavior.Cascade);
+            e.HasOne(x => x.Host).WithMany().HasForeignKey(x => x.HostUserId).OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

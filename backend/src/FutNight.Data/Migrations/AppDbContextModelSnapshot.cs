@@ -28,7 +28,33 @@ namespace FutNight.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FixtureId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("HostUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("InviteToken")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("VenueMode")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("VenueText")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("FixtureId");
+
+                    b.HasIndex("HostUserId");
+
+                    b.HasIndex("InviteToken")
+                        .IsUnique();
 
                     b.ToTable("Events");
                 });
@@ -280,6 +306,25 @@ namespace FutNight.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("FutNight.Data.Entities.Event", b =>
+                {
+                    b.HasOne("FutNight.Data.Entities.Fixture", "Fixture")
+                        .WithMany()
+                        .HasForeignKey("FixtureId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("FutNight.Data.Entities.User", "Host")
+                        .WithMany()
+                        .HasForeignKey("HostUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Fixture");
+
+                    b.Navigation("Host");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
