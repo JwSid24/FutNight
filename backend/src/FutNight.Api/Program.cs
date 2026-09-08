@@ -27,6 +27,12 @@ builder.Services.Configure<FootballDataOptions>(
 // Baggrundsjob der synker kampe ved opstart + med interval.
 builder.Services.AddHostedService<FixtureSyncBackgroundService>();
 
+// CORS så mobil-appen (Expo) må kalde API'et under udvikling.
+const string FrontendCors = "frontend";
+builder.Services.AddCors(options =>
+    options.AddPolicy(FrontendCors, policy =>
+        policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -36,6 +42,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors(FrontendCors);
 
 app.UseAuthorization();
 
