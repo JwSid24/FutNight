@@ -1,98 +1,55 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { AppBar } from '@/components/AppBar';
+import { AppDrawer, type NavKey } from '@/components/AppDrawer';
+import { BottomTabs, type TabKey } from '@/components/BottomTabs';
+import { ChatsScreen } from '@/screens/ChatsScreen';
+import { CreateScreen } from '@/screens/CreateScreen';
+import { FeedScreen } from '@/screens/FeedScreen';
+import { FixturesScreen } from '@/screens/FixturesScreen';
+import { GuestScreen } from '@/screens/GuestScreen';
+import { ProfileScreen } from '@/screens/ProfileScreen';
+import { colors } from '@/theme/theme';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+const TAB_KEYS: TabKey[] = ['home', 'kampe', 'opret', 'chats', 'profil'];
+
+export default function App() {
+  const insets = useSafeAreaInsets();
+  const [view, setView] = useState<NavKey>('home');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
+  const activeTab: TabKey = TAB_KEYS.includes(view as TabKey) ? (view as TabKey) : 'home';
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <View style={styles.root}>
+      <AppBar onMenu={() => setDrawerOpen(true)} topInset={insets.top} />
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={{ flex: 1 }}>
+        {view === 'home' && <FeedScreen onOpenChat={() => setView('chats')} />}
+        {view === 'kampe' && <FixturesScreen onCreate={() => setView('opret')} />}
+        {view === 'opret' && <CreateScreen />}
+        {view === 'chats' && <ChatsScreen />}
+        {view === 'profil' && <ProfileScreen />}
+        {view === 'guest' && <GuestScreen onBack={() => setView('home')} />}
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+      <BottomTabs active={activeTab} onChange={setView} bottomInset={insets.bottom} />
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <AppDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        onNavigate={(k: NavKey) => {
+          setView(k);
+          setDrawerOpen(false);
+        }}
+        topInset={insets.top}
+      />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
-  },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  root: { flex: 1, backgroundColor: colors.ground },
 });
