@@ -1,15 +1,17 @@
 using FutNight.Data.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace FutNight.Data;
 
-public class AppDbContext : DbContext
+// IdentityDbContext giver AspNetUsers/AspNetRoles m.fl. Vores egne tabeller ligger ved siden af.
+public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
-    public DbSet<User> Users => Set<User>();
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Fixture> Fixtures => Set<Fixture>();
 

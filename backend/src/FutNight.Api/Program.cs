@@ -1,7 +1,12 @@
+using System.Text;
+using FutNight.Api.Auth;
 using FutNight.Api.BackgroundServices;
 using FutNight.Data;
 using FutNight.Data.Football;
 using FutNight.Logic;
+using FutNight.Logic.Auth;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +38,31 @@ builder.Services.AddCors(options =>
     options.AddPolicy(FrontendCors, policy =>
         policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
 
+// JWT-authentication. Nøglen (Jwt:Key) kommer fra user-secrets.
+var jwt = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>() ?? new JwtOptions();
+if (string.IsNullOrWhiteSpace(jwt.Key))
+    throw new InvalidOperationException("Jwt:Key mangler. Sæt den via user-secrets (dotnet user-secrets set \"Jwt:Key\" ...).");
+
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection(JwtOptions.SectionName));
+builder.Services.AddSingleton<ITokenService, JwtTokenService>();
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateIssuerSigningKey = true,
+            ValidateLifetime = true,
+            ValidIssuer = jwt.Issuer,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
+        };
+    });
+builder.Services.AddAuthorization();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -45,6 +75,7 @@ app.UseHttpsRedirection();
 
 app.UseCors(FrontendCors);
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

@@ -1,4 +1,5 @@
 using FutNight.Logic.Fixtures;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FutNight.Api.Controllers;
@@ -25,7 +26,8 @@ public sealed class FixturesController : ControllerBase
         return Ok(fixtures);
     }
 
-    // Manuel trigger af sync (hent + cache). TODO: beskyt med auth når #1 er bygget.
+    // Manuel trigger af sync (hent + cache) — kræver login (#1).
+    [Authorize]
     [HttpPost("sync")]
     public async Task<ActionResult> Sync(CancellationToken ct)
     {

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Identity;
+
 namespace FutNight.Data.Entities;
 
-// Tom entitet indtil videre — udbygges når vi bygger Auth-featuren (#1).
-public class User
+// Arrangør-bruger. Arver Identity-felter (Email, UserName, PasswordHash m.m.). Guid som nøgle.
+public class User : IdentityUser<Guid>
 {
-    public Guid Id { get; set; }
+    public string DisplayName { get; set; } = "";
 }

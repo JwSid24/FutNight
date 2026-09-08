@@ -1,3 +1,4 @@
+using FutNight.Logic.Auth;
 using FutNight.Logic.Fixtures;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,7 @@ public static class DependencyInjection
     {
         services.AddScoped<IFixtureService, FixtureService>();
         services.AddScoped<IFixtureSyncService, FixtureSyncService>();
+        services.AddScoped<IAuthService, AuthService>();
 
         return services;
     }
