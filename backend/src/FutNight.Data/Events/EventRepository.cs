@@ -11,6 +11,12 @@ public interface IEventRepository
     Task<IReadOnlyList<Event>> ListForHostAsync(Guid hostUserId, CancellationToken ct = default);
     Task<bool> FixtureExistsAsync(Guid fixtureId, CancellationToken ct = default);
     Task AddRsvpAsync(Rsvp rsvp, CancellationToken ct = default);
+
+    // Logget-ind bruger svarer ja/nej (bundet til konto) — opdaterer hvis de svarer igen.
+    Task UpsertUserRsvpAsync(Guid eventId, Guid userId, string name, RsvpAnswer answer, CancellationToken ct = default);
+
+    // Chat-adgang: host, eller en indlogget bruger der har svaret ja.
+    Task<bool> CanUserAccessChatAsync(Guid eventId, Guid userId, CancellationToken ct = default);
 }
 
 public sealed class EventRepository : IEventRepository
@@ -56,5 +62,40 @@ public sealed class EventRepository : IEventRepository
     {
         _db.Rsvps.Add(rsvp);
         await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task UpsertUserRsvpAsync(Guid eventId, Guid userId, string name, RsvpAnswer answer, CancellationToken ct = default)
+    {
+        var existing = await _db.Rsvps.FirstOrDefaultAsync(r => r.EventId == eventId && r.UserId == userId, ct);
+        if (existing is null)
+        {
+            _db.Rsvps.Add(new Rsvp
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                UserId = userId,
+                GuestName = name,
+                Answer = answer,
+                RespondedUtc = DateTime.UtcNow,
+            });
+        }
+        else
+        {
+            existing.Answer = answer;
+            existing.GuestName = name;
+            existing.RespondedUtc = DateTime.UtcNow;
+        }
+
+        await _db.SaveChangesAsync(ct);
+    }
+
+    public async Task<bool> CanUserAccessChatAsync(Guid eventId, Guid userId, CancellationToken ct = default)
+    {
+        var isHost = await _db.Events.AnyAsync(e => e.Id == eventId && e.HostUserId == userId, ct);
+        if (isHost)
+            return true;
+
+        return await _db.Rsvps.AnyAsync(
+            r => r.EventId == eventId && r.UserId == userId && r.Answer == RsvpAnswer.Yes, ct);
     }
 }

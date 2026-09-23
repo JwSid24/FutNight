@@ -11,6 +11,9 @@ public interface IEventService
     // Gæste-flow (#6) — via invite-token, uden login.
     Task<GuestEventDto?> GetGuestEventAsync(string token);
     Task<GuestEventResult> SubmitRsvpAsync(string token, RsvpRequest request);
+
+    // Indlogget bruger svarer ja/nej (giver chat-adgang ved ja).
+    Task<bool> AttendAsync(Guid eventId, Guid userId, string displayName, RsvpAnswer answer);
 }
 
 public sealed class EventService : IEventService
@@ -73,6 +76,16 @@ public sealed class EventService : IEventService
 
         var updated = await _events.GetByTokenAsync(token);
         return GuestEventResult.Ok(MapGuest(updated!));
+    }
+
+    public async Task<bool> AttendAsync(Guid eventId, Guid userId, string displayName, RsvpAnswer answer)
+    {
+        var ev = await _events.GetByIdAsync(eventId);
+        if (ev is null)
+            return false;
+
+        await _events.UpsertUserRsvpAsync(eventId, userId, displayName, answer);
+        return true;
     }
 
     private static GuestEventDto MapGuest(Event e) => new(

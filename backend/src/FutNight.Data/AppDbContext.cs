@@ -15,6 +15,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Fixture> Fixtures => Set<Fixture>();
     public DbSet<Rsvp> Rsvps => Set<Rsvp>();
+    public DbSet<ChatMessage> ChatMessages => Set<ChatMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -38,6 +39,12 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
         {
             e.HasOne(x => x.Event).WithMany(ev => ev.Rsvps).HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(x => x.EventId);
+        });
+
+        modelBuilder.Entity<ChatMessage>(e =>
+        {
+            e.HasOne(x => x.Event).WithMany(ev => ev.Messages).HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.EventId, x.SentUtc });
         });
     }
 }

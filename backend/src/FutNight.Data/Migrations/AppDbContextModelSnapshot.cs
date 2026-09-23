@@ -22,6 +22,36 @@ namespace FutNight.Data.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("FutNight.Data.Entities.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("SenderName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("SenderUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("SentUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId", "SentUtc");
+
+                    b.ToTable("ChatMessages");
+                });
+
             modelBuilder.Entity("FutNight.Data.Entities.Event", b =>
                 {
                     b.Property<Guid>("Id")
@@ -127,6 +157,9 @@ namespace FutNight.Data.Migrations
 
                     b.Property<DateTime>("RespondedUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -334,6 +367,17 @@ namespace FutNight.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("FutNight.Data.Entities.ChatMessage", b =>
+                {
+                    b.HasOne("FutNight.Data.Entities.Event", "Event")
+                        .WithMany("Messages")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("FutNight.Data.Entities.Event", b =>
                 {
                     b.HasOne("FutNight.Data.Entities.Fixture", "Fixture")
@@ -417,6 +461,8 @@ namespace FutNight.Data.Migrations
 
             modelBuilder.Entity("FutNight.Data.Entities.Event", b =>
                 {
+                    b.Navigation("Messages");
+
                     b.Navigation("Rsvps");
                 });
 #pragma warning restore 612, 618

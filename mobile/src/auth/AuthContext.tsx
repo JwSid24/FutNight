@@ -4,7 +4,7 @@ import * as authApi from '@/api/auth';
 import { setAuthToken, setOnUnauthorized, TOKEN_KEY } from '@/api/authToken';
 import { storeDelete, storeGet, storeSet } from '@/auth/storage';
 
-type User = { email: string; displayName: string };
+type User = { id: string; email: string; displayName: string };
 
 type AuthState = {
   user: User | null;
@@ -20,15 +20,18 @@ const EXPIRED_NOTICE = 'Din session er udløbet — log ind igen.';
 
 const AuthContext = createContext<AuthState | undefined>(undefined);
 
-// Læs 'exp' (udløb) ud af JWT'et → millisekunder siden epoch, eller null hvis ukendt.
-function tokenExpiryMs(token: string): number | null {
+// Læs bruger-id ('sub') og udløb ('exp') ud af JWT'et.
+function decodeToken(token: string): { sub: string | null; expMs: number | null } {
   try {
     let payload = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
     while (payload.length % 4) payload += '=';
     const json = JSON.parse(atob(payload));
-    return typeof json.exp === 'number' ? json.exp * 1000 : null;
+    return {
+      sub: typeof json.sub === 'string' ? json.sub : null,
+      expMs: typeof json.exp === 'number' ? json.exp * 1000 : null,
+    };
   } catch {
-    return null;
+    return { sub: null, expMs: null };
   }
 }
 
@@ -57,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Planlæg auto-logout præcis når token'et udløber.
   const scheduleExpiry = (token: string) => {
     clearTimer();
-    const expMs = tokenExpiryMs(token);
+    const { expMs } = decodeToken(token);
     if (expMs === null) return; // ukendt udløb → stol på 401-håndteringen
     const ms = expMs - Date.now();
     if (ms <= 0) {
@@ -80,13 +83,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const token = await storeGet(TOKEN_KEY);
         const userJson = await storeGet(USER_KEY);
         if (token && userJson) {
-          const expMs = tokenExpiryMs(token);
+          const { sub, expMs } = decodeToken(token);
           if (expMs !== null && expMs <= Date.now()) {
             await storeDelete(TOKEN_KEY);
             await storeDelete(USER_KEY);
           } else {
             setAuthToken(token);
-            setUser(JSON.parse(userJson) as User);
+            const stored = JSON.parse(userJson) as { email: string; displayName: string };
+            setUser({ id: sub ?? '', email: stored.email, displayName: stored.displayName });
             scheduleExpiry(token);
           }
         }
@@ -99,7 +103,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const persist = async (res: authApi.AuthResponse) => {
-    const u: User = { email: res.email, displayName: res.displayName };
+    const { sub } = decodeToken(res.token);
+    const u: User = { id: sub ?? '', email: res.email, displayName: res.displayName };
     setAuthToken(res.token);
     await storeSet(TOKEN_KEY, res.token);
     await storeSet(USER_KEY, JSON.stringify(u));

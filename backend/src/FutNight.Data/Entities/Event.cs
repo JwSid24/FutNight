@@ -18,4 +18,5 @@ public class Event
     public DateTime CreatedUtc { get; set; }
 
     public List<Rsvp> Rsvps { get; set; } = new();
+    public List<ChatMessage> Messages { get; set; } = new();
 }

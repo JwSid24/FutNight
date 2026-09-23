@@ -29,6 +29,9 @@ public sealed record EventResult(bool Succeeded, EventDto? Event, string? Error)
 
 public sealed record RsvpRequest(string GuestName, RsvpAnswer Answer);
 
+// Indlogget bruger svarer ja/nej på et event.
+public sealed record AttendRequest(RsvpAnswer Answer);
+
 // Det gæsten ser via linket — kun dette ene event, intet andet.
 public sealed record GuestEventDto(
     string CompetitionCode,

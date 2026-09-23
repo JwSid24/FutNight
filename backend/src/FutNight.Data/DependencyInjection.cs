@@ -1,3 +1,4 @@
+using FutNight.Data.Chat;
 using FutNight.Data.Entities;
 using FutNight.Data.Events;
 using FutNight.Data.Fixtures;
@@ -33,6 +34,7 @@ public static class DependencyInjection
 
         services.AddScoped<IFixtureRepository, FixtureRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IChatRepository, ChatRepository>();
 
         // Typed HttpClient til fodbold-data-kilden. Base-URL fra options (FootballDataOptions).
         services.AddHttpClient<IFootballDataClient, FootballDataClient>((sp, http) =>

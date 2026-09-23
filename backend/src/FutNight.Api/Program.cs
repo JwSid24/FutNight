@@ -1,6 +1,7 @@
 using System.Text;
 using FutNight.Api.Auth;
 using FutNight.Api.BackgroundServices;
+using FutNight.Api.Chat;
 using FutNight.Data;
 using FutNight.Data.Football;
 using FutNight.Logic;
@@ -35,6 +36,9 @@ builder.Services.Configure<FootballDataOptions>(
 // Baggrundsjob der synker kampe ved opstart + med interval.
 builder.Services.AddHostedService<FixtureSyncBackgroundService>();
 
+// Rydder udløbne chatbeskeder (efemer 24t-opbevaring).
+builder.Services.AddHostedService<ChatCleanupBackgroundService>();
+
 // CORS så mobil-appen (Expo) må kalde API'et under udvikling.
 const string FrontendCors = "frontend";
 builder.Services.AddCors(options =>
@@ -63,8 +67,21 @@ builder.Services
             ValidAudience = jwt.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
         };
+
+        // SignalR-websocket kan ikke sætte Authorization-header → læs token fra query.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(accessToken) && context.HttpContext.Request.Path.StartsWithSegments("/hubs/chat"))
+                    context.Token = accessToken;
+                return Task.CompletedTask;
+            },
+        };
     });
 builder.Services.AddAuthorization();
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -82,5 +99,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
