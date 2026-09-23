@@ -1,16 +1,20 @@
 import { Feather } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
+import { useAuth } from '@/auth/AuthContext';
 import { Avatar, Crest, SectionLabel } from '@/components/ui';
 import { colors, font, radius } from '@/theme/theme';
 
 export function ProfileScreen() {
+  const { user } = useAuth();
+  const initials = (user?.displayName || '?').trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+
   return (
     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
       <View style={styles.head}>
-        <Avatar initials="JW" size={82} />
-        <Text style={styles.name}>Jwan</Text>
-        <Text style={styles.handle}>@jwan · Arrangør</Text>
+        <Avatar initials={initials} size={82} />
+        <Text style={styles.name}>{user?.displayName ?? 'Bruger'}</Text>
+        <Text style={styles.handle}>{user?.email ?? 'Arrangør'}</Text>
       </View>
 
       <View style={styles.stats}>

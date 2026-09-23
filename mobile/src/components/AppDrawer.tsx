@@ -2,6 +2,7 @@ import { Feather } from '@expo/vector-icons';
 import { useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/ui';
 import { colors, font } from '@/theme/theme';
 
@@ -29,6 +30,9 @@ export function AppDrawer({
   onNavigate: (k: NavKey) => void;
   topInset: number;
 }) {
+  const { user, logout } = useAuth();
+  const initials = (user?.displayName || '?').trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join('').toUpperCase();
+
   const x = useRef(new Animated.Value(-WIDTH - 20)).current;
   const fade = useRef(new Animated.Value(0)).current;
 
@@ -47,10 +51,10 @@ export function AppDrawer({
 
       <Animated.View style={[styles.drawer, { paddingTop: topInset + 20, transform: [{ translateX: x }] }]}>
         <View style={styles.head}>
-          <Avatar initials="JW" size={44} />
-          <View>
-            <Text style={styles.name}>Jwan</Text>
-            <Text style={styles.sub}>Arrangør · logget ind</Text>
+          <Avatar initials={initials} size={44} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.name} numberOfLines={1}>{user?.displayName ?? 'Bruger'}</Text>
+            <Text style={styles.sub} numberOfLines={1}>{user?.email ?? 'Arrangør'}</Text>
           </View>
         </View>
 
@@ -66,7 +70,12 @@ export function AppDrawer({
           </Pressable>
         ))}
 
-        <Pressable style={[styles.item, { marginTop: 'auto' }]} onPress={onClose}>
+        <Pressable
+          style={[styles.item, { marginTop: 'auto' }]}
+          onPress={() => {
+            onClose();
+            void logout();
+          }}>
           <Feather name="log-out" size={19} color={colors.live} />
           <Text style={[styles.itemTxt, { color: colors.live }]}>Log ud</Text>
         </Pressable>

@@ -18,6 +18,7 @@ import { useEffect } from 'react';
 import { View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
+import { AuthProvider } from '@/auth/AuthContext';
 import { colors } from '@/theme/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -44,7 +45,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <View style={{ flex: 1, backgroundColor: colors.ground }}>
-        <Slot />
+        <AuthProvider>
+          <Slot />
+        </AuthProvider>
       </View>
     </SafeAreaProvider>
   );
