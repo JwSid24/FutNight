@@ -1,4 +1,4 @@
-import { getAuthToken, setAuthToken, TOKEN_KEY } from './authToken';
+import { getAuthToken, notifyUnauthorized, setAuthToken, TOKEN_KEY } from './authToken';
 import { API_BASE_URL } from './config';
 import { storeGet } from '@/auth/storage';
 
@@ -20,5 +20,10 @@ export async function apiFetch(path: string, init: RequestInit = {}): Promise<Re
   if (token) headers.Authorization = `Bearer ${token}`;
   if (init.body && !headers['Content-Type']) headers['Content-Type'] = 'application/json';
 
-  return fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+  const res = await fetch(`${API_BASE_URL}${path}`, { ...init, headers });
+
+  // Token afvist på et beskyttet endpoint → sessionen er udløbet/ugyldig → log ud.
+  if (res.status === 401 && token) notifyUnauthorized();
+
+  return res;
 }

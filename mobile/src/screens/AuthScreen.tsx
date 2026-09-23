@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
 import {
@@ -27,7 +28,7 @@ function Field({ label, ...props }: TextInputProps & { label: string }) {
 }
 
 export function AuthScreen() {
-  const { login, register } = useAuth();
+  const { login, register, notice } = useAuth();
   const insets = useSafeAreaInsets();
 
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -62,6 +63,13 @@ export function AuthScreen() {
 
         <View style={styles.card}>
           <Text style={styles.h}>{mode === 'login' ? 'Log ind' : 'Opret konto'}</Text>
+
+          {notice && !error && (
+            <View style={styles.notice}>
+              <Feather name="clock" size={15} color={colors.floodlight} />
+              <Text style={styles.noticeTxt}>{notice}</Text>
+            </View>
+          )}
 
           {mode === 'register' && (
             <Field label="Navn" value={displayName} onChangeText={setDisplayName} placeholder="Dit navn" autoCapitalize="words" />
@@ -140,6 +148,8 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   err: { color: colors.live, fontFamily: font.semi, fontSize: 12.5 },
+  notice: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: colors.floodlightSoft, borderWidth: 1, borderColor: colors.floodlightBorder, borderRadius: radius.sm, paddingVertical: 10, paddingHorizontal: 12 },
+  noticeTxt: { flex: 1, color: colors.floodlight, fontFamily: font.semi, fontSize: 12.5 },
   btn: { paddingVertical: 14, borderRadius: 13, alignItems: 'center', marginTop: 4 },
   btnTxt: { color: colors.onAccent, fontFamily: font.display, fontSize: 16, letterSpacing: 0.5, textTransform: 'uppercase' },
   toggle: { alignItems: 'center', paddingTop: 4 },
