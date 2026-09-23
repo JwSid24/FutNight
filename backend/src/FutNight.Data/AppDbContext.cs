@@ -14,6 +14,7 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 
     public DbSet<Event> Events => Set<Event>();
     public DbSet<Fixture> Fixtures => Set<Fixture>();
+    public DbSet<Rsvp> Rsvps => Set<Rsvp>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -31,6 +32,12 @@ public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
             e.HasIndex(x => x.InviteToken).IsUnique();
             e.HasOne(x => x.Fixture).WithMany().HasForeignKey(x => x.FixtureId).OnDelete(DeleteBehavior.Cascade);
             e.HasOne(x => x.Host).WithMany().HasForeignKey(x => x.HostUserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Rsvp>(e =>
+        {
+            e.HasOne(x => x.Event).WithMany(ev => ev.Rsvps).HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => x.EventId);
         });
     }
 }

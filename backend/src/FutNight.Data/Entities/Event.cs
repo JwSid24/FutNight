@@ -16,4 +16,6 @@ public class Event
 
     public string InviteToken { get; set; } = "";  // til det delbare link
     public DateTime CreatedUtc { get; set; }
+
+    public List<Rsvp> Rsvps { get; set; } = new();
 }

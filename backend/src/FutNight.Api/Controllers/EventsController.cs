@@ -28,4 +28,24 @@ public sealed class EventsController : ControllerBase
     [HttpGet("mine")]
     public async Task<ActionResult<IReadOnlyList<EventDto>>> Mine()
         => Ok(await _events.GetMineAsync(CurrentUserId));
+
+    // ---- Gæste-flow (#6): åbne endpoints, ingen login ----
+
+    // Gæst åbner invite-linket → ser dette ene event.
+    [AllowAnonymous]
+    [HttpGet("by-token/{token}")]
+    public async Task<ActionResult<GuestEventDto>> ByToken(string token)
+    {
+        var ev = await _events.GetGuestEventAsync(token);
+        return ev is null ? NotFound(new { error = "Eventet findes ikke." }) : Ok(ev);
+    }
+
+    // Gæst svarer ja/nej uden konto.
+    [AllowAnonymous]
+    [HttpPost("by-token/{token}/rsvp")]
+    public async Task<ActionResult<GuestEventDto>> Rsvp(string token, RsvpRequest request)
+    {
+        var result = await _events.SubmitRsvpAsync(token, request);
+        return result.Succeeded ? Ok(result.Event) : BadRequest(new { error = result.Error });
+    }
 }

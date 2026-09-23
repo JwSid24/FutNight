@@ -12,7 +12,6 @@ import { ChatsScreen } from '@/screens/ChatsScreen';
 import { CreateScreen } from '@/screens/CreateScreen';
 import { FeedScreen } from '@/screens/FeedScreen';
 import { FixturesScreen } from '@/screens/FixturesScreen';
-import { GuestScreen } from '@/screens/GuestScreen';
 import { ProfileScreen } from '@/screens/ProfileScreen';
 import { colors } from '@/theme/theme';
 
@@ -59,7 +58,6 @@ export default function App() {
         {view === 'opret' && <CreateScreen fixture={selectedFixture} />}
         {view === 'chats' && <ChatsScreen />}
         {view === 'profil' && <ProfileScreen />}
-        {view === 'guest' && <GuestScreen onBack={() => setView('home')} />}
       </View>
 
       <BottomTabs active={activeTab} onChange={handleTab} bottomInset={insets.bottom} />

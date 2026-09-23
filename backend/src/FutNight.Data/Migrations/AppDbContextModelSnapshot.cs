@@ -109,6 +109,32 @@ namespace FutNight.Data.Migrations
                     b.ToTable("Fixtures");
                 });
 
+            modelBuilder.Entity("FutNight.Data.Entities.Rsvp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Answer")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("GuestName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("RespondedUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("Rsvps");
+                });
+
             modelBuilder.Entity("FutNight.Data.Entities.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -327,6 +353,17 @@ namespace FutNight.Data.Migrations
                     b.Navigation("Host");
                 });
 
+            modelBuilder.Entity("FutNight.Data.Entities.Rsvp", b =>
+                {
+                    b.HasOne("FutNight.Data.Entities.Event", "Event")
+                        .WithMany("Rsvps")
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
@@ -376,6 +413,11 @@ namespace FutNight.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FutNight.Data.Entities.Event", b =>
+                {
+                    b.Navigation("Rsvps");
                 });
 #pragma warning restore 612, 618
         }

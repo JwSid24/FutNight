@@ -1,7 +1,9 @@
 import { Feather } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
+import { router, type Href } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { createEvent, type EventDto } from '@/api/events';
 import type { FixtureDto } from '@/api/fixtures';
@@ -19,6 +21,19 @@ export function CreateScreen({ fixture }: { fixture: FixtureDto | null }) {
   const [copied, setCopied] = useState(false);
 
   const meta = fixture ? metaFor(fixture.competitionCode) : null;
+
+  // På web er den lokale URL faktisk åbnbar; ellers vises det (fremtidige) domæne.
+  const shareLink = created
+    ? Platform.OS === 'web' && typeof window !== 'undefined'
+      ? `${window.location.origin}/e/${created.inviteToken}`
+      : `futnight.app/e/${created.inviteToken}`
+    : '';
+
+  const copyLink = async () => {
+    await Clipboard.setStringAsync(shareLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  };
 
   const submit = async () => {
     if (!fixture) return;
@@ -111,15 +126,17 @@ export function CreateScreen({ fixture }: { fixture: FixtureDto | null }) {
           </View>
           <View style={styles.share}>
             <Feather name="link" size={18} color={colors.accent} />
-            <Text style={styles.shareCode} numberOfLines={1}>futnight.app/e/{created.inviteToken}</Text>
-            <Pressable style={styles.copy} onPress={() => setCopied(true)}>
+            <Text style={styles.shareCode} numberOfLines={1}>{shareLink}</Text>
+            <Pressable style={styles.copy} onPress={copyLink}>
               <Text style={styles.copyTxt}>{copied ? 'Kopieret ✓' : 'Kopiér'}</Text>
             </Pressable>
           </View>
+          <Pressable style={styles.previewBtn} onPress={() => router.push(`/e/${created.inviteToken}` as Href)}>
+            <Feather name="external-link" size={15} color={colors.accent} />
+            <Text style={styles.previewTxt}>Åbn gæste-visning (sådan ser dine venner den)</Text>
+          </Pressable>
         </View>
       )}
-
-      <Text style={styles.hint}>Gæster åbner linket og svarer ja/nej uden konto (#5 + #6).</Text>
     </ScrollView>
   );
 }
@@ -158,5 +175,7 @@ const styles = StyleSheet.create({
   shareCode: { flex: 1, color: colors.accent, fontFamily: font.semi, fontSize: 12 },
   copy: { backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.accentBorder, borderRadius: 10, paddingVertical: 7, paddingHorizontal: 11 },
   copyTxt: { color: colors.accent, fontFamily: font.bold, fontSize: 12 },
+  previewBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingVertical: 12 },
+  previewTxt: { color: colors.accent, fontFamily: font.bold, fontSize: 12.5 },
   hint: { color: colors.muted2, fontFamily: font.med, fontSize: 12, textAlign: 'center' },
 });

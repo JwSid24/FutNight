@@ -6,7 +6,7 @@ import { useAuth } from '@/auth/AuthContext';
 import { Avatar } from '@/components/ui';
 import { colors, font } from '@/theme/theme';
 
-export type NavKey = 'home' | 'kampe' | 'opret' | 'chats' | 'profil' | 'guest';
+export type NavKey = 'home' | 'kampe' | 'opret' | 'chats' | 'profil';
 
 const WIDTH = 290;
 
@@ -15,7 +15,6 @@ const items: { icon: keyof typeof Feather.glyphMap; label: string; tag?: string;
   { icon: 'calendar', label: 'Kommende kampe', tag: '#2', go: 'kampe' },
   { icon: 'star', label: 'Favorithold', tag: '#2', go: 'profil' },
   { icon: 'check-circle', label: 'Mine events', tag: 'Host', go: 'home' },
-  { icon: 'link', label: 'Gæste-visning', tag: '#6', go: 'guest' },
   { icon: 'settings', label: 'Indstillinger' },
 ];
 
