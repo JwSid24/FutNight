@@ -49,3 +49,21 @@ public sealed record GuestEventResult(bool Succeeded, GuestEventDto? Event, stri
     public static GuestEventResult Ok(GuestEventDto ev) => new(true, ev, null);
     public static GuestEventResult Fail(string error) => new(false, null, error);
 }
+
+// ---- Oversigt (#8): hvem kommer + hvor. Payoffet for host + deltagere ----
+
+// Ét svar i oversigten. IsGuest = svaret kom via link uden konto.
+public sealed record AttendeeDto(string Name, string Answer, bool IsGuest);
+
+public sealed record EventOverviewDto(
+    Guid Id,
+    string CompetitionCode,
+    string CompetitionName,
+    string HomeTeam,
+    string AwayTeam,
+    DateTime UtcKickoff,
+    string VenueMode,
+    string? VenueText,
+    string HostName,
+    int ComingCount,
+    IReadOnlyList<AttendeeDto> Attendees);

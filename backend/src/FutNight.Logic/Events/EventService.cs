@@ -14,6 +14,9 @@ public interface IEventService
 
     // Indlogget bruger svarer ja/nej (giver chat-adgang ved ja).
     Task<bool> AttendAsync(Guid eventId, Guid userId, string displayName, RsvpAnswer answer);
+
+    // Oversigt (#8): hvem kommer + hvor. Samme adgang som chatten (host eller svaret ja).
+    Task<EventOverviewDto?> GetOverviewAsync(Guid eventId, Guid userId);
 }
 
 public sealed class EventService : IEventService
@@ -86,6 +89,38 @@ public sealed class EventService : IEventService
 
         await _events.UpsertUserRsvpAsync(eventId, userId, displayName, answer);
         return true;
+    }
+
+    public async Task<EventOverviewDto?> GetOverviewAsync(Guid eventId, Guid userId)
+    {
+        // Håndhæves i backend: kun host eller en deltager der har svaret ja ser oversigten.
+        if (!await _events.CanUserAccessChatAsync(eventId, userId))
+            return null;
+
+        var ev = await _events.GetByIdWithRsvpsAsync(eventId);
+        return ev is null ? null : MapOverview(ev);
+    }
+
+    private static EventOverviewDto MapOverview(Event e)
+    {
+        var attendees = e.Rsvps
+            .OrderByDescending(r => r.Answer == RsvpAnswer.Yes)  // ja først
+            .ThenBy(r => r.RespondedUtc)
+            .Select(r => new AttendeeDto(r.GuestName, r.Answer.ToString(), r.UserId is null))
+            .ToList();
+
+        return new EventOverviewDto(
+            e.Id,
+            e.Fixture?.CompetitionCode ?? string.Empty,
+            e.Fixture?.CompetitionName ?? string.Empty,
+            e.Fixture?.HomeTeam ?? string.Empty,
+            e.Fixture?.AwayTeam ?? string.Empty,
+            e.Fixture?.UtcKickoff ?? default,
+            e.VenueMode.ToString(),
+            e.VenueText,
+            e.Host?.DisplayName ?? string.Empty,
+            e.Rsvps.Count(r => r.Answer == RsvpAnswer.Yes),
+            attendees);
     }
 
     private static GuestEventDto MapGuest(Event e) => new(

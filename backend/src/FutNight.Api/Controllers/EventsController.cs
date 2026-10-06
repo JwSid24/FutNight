@@ -30,6 +30,14 @@ public sealed class EventsController : ControllerBase
     public async Task<ActionResult<IReadOnlyList<EventDto>>> Mine()
         => Ok(await _events.GetMineAsync(CurrentUserId));
 
+    // Oversigt (#8): hvem kommer + hvor. Kun host eller en deltager der har svaret ja.
+    [HttpGet("{eventId:guid}/overview")]
+    public async Task<ActionResult<EventOverviewDto>> Overview(Guid eventId)
+    {
+        var overview = await _events.GetOverviewAsync(eventId, CurrentUserId);
+        return overview is null ? NotFound(new { error = "Ingen adgang til dette event." }) : Ok(overview);
+    }
+
     // Indlogget bruger svarer ja/nej (ja giver chat-adgang).
     [HttpPost("{eventId:guid}/rsvp")]
     public async Task<ActionResult> Attend(Guid eventId, AttendRequest request)

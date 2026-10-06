@@ -7,6 +7,7 @@ public interface IEventRepository
 {
     Task AddAsync(Event ev, CancellationToken ct = default);
     Task<Event?> GetByIdAsync(Guid id, CancellationToken ct = default);
+    Task<Event?> GetByIdWithRsvpsAsync(Guid id, CancellationToken ct = default);
     Task<Event?> GetByTokenAsync(string token, CancellationToken ct = default);
     Task<IReadOnlyList<Event>> ListForHostAsync(Guid hostUserId, CancellationToken ct = default);
     Task<bool> FixtureExistsAsync(Guid fixtureId, CancellationToken ct = default);
@@ -46,6 +47,14 @@ public sealed class EventRepository : IEventRepository
             .Where(e => e.HostUserId == hostUserId)
             .OrderByDescending(e => e.CreatedUtc)
             .ToListAsync(ct);
+
+    public Task<Event?> GetByIdWithRsvpsAsync(Guid id, CancellationToken ct = default) =>
+        _db.Events
+            .AsNoTracking()
+            .Include(e => e.Fixture)
+            .Include(e => e.Host)
+            .Include(e => e.Rsvps)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
 
     public Task<Event?> GetByTokenAsync(string token, CancellationToken ct = default) =>
         _db.Events
